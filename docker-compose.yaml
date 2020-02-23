@@ -1,0 +1,76 @@
+version: '2'
+services:
+  db:
+    image: mysql:5.7
+    container_name: mysql
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - '3306:3306'
+    restart: always
+    command: [
+      '--wait_timeout=28800',
+    ]
+    networks:
+      backend:
+        aliases:
+          - db
+
+  php:
+    build: php-fpm
+    container_name: php
+    restart: always
+    ports:
+      - '9002:9000'
+    volumes:
+      - ${HOME}:/var/www/symfony:cached
+    links:
+      - db
+    networks:
+      backend:
+        aliases:
+          - php
+
+  nginx:
+    build: nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    links:
+      - php
+    volumes_from:
+      - php
+    networks:
+      backend:
+        aliases:
+          - nginx
+
+  smtp:
+    image: namshi/smtp
+    container_name: smtp
+    restart: always
+    environment:
+      - RELAY_DOMAINS=${POSTFIX_RELAY}
+      - KEY_PATH=/certs/smtpd.key
+      - CERTIFICATE_PATH=/certs/smtpd.cert
+      - MAILNAME=${POSTFIX_MAILNAME}
+    volumes:
+      - ${POSTFIX_CERTS}:/certs/
+    ports:
+      - '25:25'
+      - '587:587'
+    networks:
+      backend:
+        aliases:
+          - smtp
+
+networks:
+  backend:
+    driver: "bridge"
