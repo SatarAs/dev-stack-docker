@@ -28,7 +28,7 @@ services:
     ports:
       - '9002:9000'
     volumes:
-      - ${HOME}:/var/www/symfony:cached
+      - ${HOME_PROJECTS}:/var/www/symfony:cached
     links:
       - db
     networks:
