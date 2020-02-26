@@ -53,19 +53,13 @@ services:
           - nginx
 
   smtp:
-    image: namshi/smtp
+    image: djfarrelly/maildev
     container_name: smtp
     restart: always
-    environment:
-      - RELAY_DOMAINS=${POSTFIX_RELAY}
-      - KEY_PATH=/certs/smtpd.key
-      - CERTIFICATE_PATH=/certs/smtpd.cert
-      - MAILNAME=${POSTFIX_MAILNAME}
-    volumes:
-      - ${POSTFIX_CERTS}:/certs/
     ports:
       - '25:25'
       - '587:587'
+      - '1080:80'
     networks:
       backend:
         aliases:
